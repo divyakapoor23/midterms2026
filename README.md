@@ -4,12 +4,10 @@ A Python project that retrieves 2026 U.S. Senate and House of Representatives ca
 
 ## Project objectives
 
-- Connect to the OpenFEC API using an API key stored in an environment file.
-- Request candidates for the 2026 election cycle who have raised funds.
-- Retrieve Senate (`S`) and House (`H`) candidates separately.
-- Inspect API response metadata and candidate counts.
-- Export candidate records to CSV for further analysis.
-- Handle missing API keys, HTTP errors, and CSV-writing errors.
+- Phase A: Campaign finance tracker (in progress)
+- Phase B: Polls vs. election results
+- Phase C: Geospatial and demographic analysis (county level)
+- Phase D: Predictive modeling (baseline + gradient boosting, spatial cross-validation)
 
 ## Technologies
 
@@ -88,10 +86,9 @@ The script checks for a missing API key and raises a `ValueError` when it is una
 
 ## Current limitations
 
-- **First-page results only:** The current implementation requests up to 100 records per office. It does not automatically retrieve additional pages, so the CSVs may not contain all matching candidates.
-- **Candidate data, not election results:** These records describe candidates returned by the FEC API; they do not represent vote totals or winners.
-- **API-dependent data:** Record counts and fields may change as FEC data is updated.
-- **Local exports:** CSV files are written to the directory from which the script runs unless a different path is specified.
+- The FEC tracks money, not votes. It doesn't record who won a primary, so
+  candidate lists include primary losers.
+- Fundraising data lags: some late donations aren't reported until after the election.
 
 ## Possible future improvements
 
