@@ -1,67 +1,82 @@
 import os
+import time
+
+import pandas as pd
 import requests
 from dotenv import load_dotenv
-import pandas as pd
 
-
-
-load_dotenv("fec.env")
-api_key = os.getenv("FEC_API_KEY")
-print("FEC_API_KEY loaded:", bool(api_key))
-
+# Constants: fixed values, safe at the top of the file
 URL = "https://api.open.fec.gov/v1/candidates/"
+ELECTION_YEAR = 2026
+PER_PAGE = 100
+TIMEOUT_SECONDS = 30
+PAUSE_SECONDS = 0.5  # short pause between requests, to be polite to the API
 
-"""
-Make a dictionary of the query settings
-Call requests.get(), giving it the URL and passing the dictionary as params=.
-Print the response’s status_code.
-"""
-offices = {
+OFFICES = {
     "S": "senate_candidates.csv",
-    "H": "house_candidates.csv"
+    "H": "house_candidates.csv",
 }
 
-for office, filename in offices.items():
-    
+
+def load_api_key():
+    """Load the FEC API key from the env file. Stop with a clear error if it's missing."""
+    load_dotenv("fec.env")
+    api_key = os.getenv("FEC_API_KEY")
+    if not api_key:
+        raise RuntimeError("FEC_API_KEY not found. Check your fec.env file.")
+    return api_key
+
+
+def fetch_page(office, page, api_key):
+    """Request one page of candidates for one office. Returns the JSON as a dict."""
     query_settings = {
         "api_key": api_key,
-        "election_year": 2026,
+        "election_year": ELECTION_YEAR,
         "office": office,
         "has_raised_funds": True,
-        "per_page": 100
+        "per_page": PER_PAGE,
+        "page": page,
     }
+    response = requests.get(URL, params=query_settings, timeout=TIMEOUT_SECONDS)
+    response.raise_for_status()  # error for 4xx/5xx responses
+    return response.json()
 
-try:
-    response = requests.get(
-        URL,
-        params = query_settings,
-        timeout = 30
-    )
 
-    print(f"\nStatus code for {office}:",
-          response.status_code)
-# Throw an error for unsuccessful HTTP responses
-    response.raise_for_status()
-    election_data = response.json()
-    # Display candidate counts
-    print("Total candidates:",
-            election_data["pagination"]["count"])
+def fetch_all_candidates(office, api_key):
+    """Fetch every page for one office. Returns a list of all candidates."""
+    first_page = fetch_page(office, 1, api_key)
+    total_pages = first_page["pagination"]["pages"]
+    expected_count = first_page["pagination"]["count"]
 
-    print("Candidates on this page:",
-            len(election_data["results"]))
-    df = pd.DataFrame(election_data["results"])
+    all_candidates = list(first_page["results"])
+    print(f"[{office}] page 1/{total_pages}")
 
-    # Save CSV with error handling
-    try:
-        df.to_csv(filename, index=False)
-        print(f"Successfully saved {filename}")
+    for page in range(2, total_pages + 1):
+        time.sleep(PAUSE_SECONDS)
+        data = fetch_page(office, page, api_key)
+        all_candidates.extend(data["results"])
+        print(f"[{office}] page {page}/{total_pages}")
 
-    except OSError as e:
-        print(f"Error creating CSV: {e}")
-        raise   
+    # Sanity check: did we get everything the API said exists?
+    if len(all_candidates) != expected_count:
+        print(f"WARNING [{office}]: expected {expected_count}, got {len(all_candidates)}")
 
-except requests.exceptions.RequestException as e:
-        print(f"API request failed for {office}: {e}")
-        raise
+    return all_candidates
 
-    
+
+def save_csv(candidates, filename):
+    """Save a list of candidate dicts to a CSV file."""
+    df = pd.DataFrame(candidates)
+    df.to_csv(filename, index=False)
+    print(f"Saved {len(df)} rows to {filename}")
+
+
+def main():
+    api_key = load_api_key()
+    for office, filename in OFFICES.items():
+        candidates = fetch_all_candidates(office, api_key)
+        save_csv(candidates, filename)
+
+
+if __name__ == "__main__":
+    main()
