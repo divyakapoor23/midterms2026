@@ -1,0 +1,42 @@
+name: midterms-eda
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+
+  # API, Config & Ingestion
+  - requests
+  - python-dotenv
+  - duckdb          # Fast SQL queries on large raw Parquet/CSV files (Census & election data)
+
+  # Data Wrangling & Formats
+  - pandas
+  - polars          # Multi-core fast DataFrame library for generating lag variables
+  - numpy
+  - pyarrow
+
+  # Geospatial Analysis (Essential for Precincts & Spatial Autocorrelation)
+  - geopandas       # Reading shapefiles, geojson, spatial joins
+  - pysal           # Spatial autocorrelation (Moran's I) and spatial lag/error models
+  - mapclassify     # Choropleth map classification schemes
+
+  # Data Quality & Testing
+  - pydantic
+  - pytest
+
+  # Predictive Statistics & Baseline ML
+  - scikit-learn
+  - statsmodels
+  - scipy
+
+  # Advanced Gradient Boosted Trees
+  - xgboost
+  - lightgbm
+  - catboost         # Automatically handles categorical features like State & FIPS codes
+
+  # Model Interpretability
+  - shap             # Calculate feature contributions (e.g., impact of education on turnout)
+
+  # Visualizations
+  - matplotlib
+  - seaborn

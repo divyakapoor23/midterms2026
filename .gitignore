@@ -1,0 +1,16 @@
+# Local secrets
+.env
+.env.*
+*.env
+!.env.example
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store

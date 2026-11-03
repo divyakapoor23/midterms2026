@@ -1,0 +1,18 @@
+# API + config
+requests
+python-dotenv
+
+# Data + EDA
+pandas
+numpy
+matplotlib
+pyarrow
+
+# Data quality
+pydantic
+pytest
+
+# Predictive statistics
+scikit-learn
+statsmodels
+scipy
