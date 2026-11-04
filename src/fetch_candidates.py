@@ -1,11 +1,13 @@
 import os
 import time
+from pathlib import Path
 
 import pandas as pd
 import requests
 from dotenv import load_dotenv
 
 # Constants: fixed values, safe at the top of the file
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 URL = "https://api.open.fec.gov/v1/candidates/"
 ELECTION_YEAR = 2026
 PER_PAGE = 100
@@ -13,17 +15,18 @@ TIMEOUT_SECONDS = 30
 PAUSE_SECONDS = 0.5  # short pause between requests, to be polite to the API
 
 OFFICES = {
-    "S": "senate_candidates.csv",
-    "H": "house_candidates.csv",
+    "S": PROJECT_ROOT / "data/raw/senate_candidates.csv",
+    "H": PROJECT_ROOT / "data/raw/house_candidates.csv",
 }
 
 
 def load_api_key():
     """Load the FEC API key from the env file. Stop with a clear error if it's missing."""
-    load_dotenv("fec.env")
+    env_path = PROJECT_ROOT / "fec.env"
+    load_dotenv(env_path)
     api_key = os.getenv("FEC_API_KEY")
     if not api_key:
-        raise RuntimeError("FEC_API_KEY not found. Check your fec.env file.")
+        raise RuntimeError(f"FEC_API_KEY not found. Set it in {env_path} or your environment.")
     return api_key
 
 
@@ -66,6 +69,7 @@ def fetch_all_candidates(office, api_key):
 
 def save_csv(candidates, filename):
     """Save a list of candidate dicts to a CSV file."""
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(candidates)
     df.to_csv(filename, index=False)
     print(f"Saved {len(df)} rows to {filename}")

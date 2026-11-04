@@ -32,10 +32,10 @@ A Python project that retrieves 2026 U.S. Senate and House of Representatives ca
    FEC_API_KEY=your_actual_api_key_here
    ```
 
-5. Run the Python script (replace `main.py` with your actual filename):
+5. Run the Python script from the project directory:
 
    ```bash
-   python main.py
+   python src/fetch_candidates.py
    ```
 
 **Security:** Do not commit `fec.env` or your API key to GitHub. Add this to `.gitignore`:
